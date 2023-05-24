@@ -6,6 +6,15 @@ import numpy as np
 import matplotlib.image as mpimg
 import pandas as pd
 import cv2
+from torchvision import transforms
+
+
+# Use only keypoints that have a high probability to be assoziated with an edge
+keypoint_list = []
+keypoint_sublist = [19, 22, 23, 26, 28, 31, 37, 40, 43, 46, 49, 52, 55, 59]
+for id in keypoint_sublist:
+    keypoint_list.append((id-1)*2)
+    keypoint_list.append((id-1)*2+1)
 
 
 class FacialKeypointsDataset(Dataset):
@@ -20,6 +29,7 @@ class FacialKeypointsDataset(Dataset):
                 on a sample.
         """
         self.key_pts_frame = pd.read_csv(csv_file)
+        self.key_pts_frame = self.key_pts_frame[['Unnamed: 0']+[str(i) for i in keypoint_list]]
         self.root_dir = root_dir
         self.transform = transform
 
@@ -71,6 +81,10 @@ class Normalize(object):
 
 
         return {'image': image_copy, 'keypoints': key_pts_copy}
+
+
+norm_means = [0.485, 0.456, 0.406]
+norm_std = [0.229, 0.224, 0.225]#
 
 
 class Rescale(object):
@@ -141,6 +155,39 @@ class RandomCrop(object):
         return {'image': image, 'keypoints': key_pts}
 
 
+class CenterCrop(object):
+    """Crop randomly the image in a sample.
+
+    Args:
+        output_size (tuple or int): Desired output size. If int, square crop
+            is made.
+    """
+
+    def __init__(self, output_size):
+        assert isinstance(output_size, (int, tuple))
+        if isinstance(output_size, int):
+            self.output_size = (output_size, output_size)
+        else:
+            assert len(output_size) == 2
+            self.output_size = output_size
+
+    def __call__(self, sample):
+        image, key_pts = sample['image'], sample['keypoints']
+
+        h, w = image.shape[:2]
+        new_h, new_w = self.output_size
+
+        top = int((h - new_h)/2)
+        left = int((w - new_w)/2)
+
+        image = image[top: top + new_h,
+                      left: left + new_w]
+
+        key_pts = key_pts - [left, top]
+
+        return {'image': image, 'keypoints': key_pts}
+
+
 class ToTensor(object):
     """Convert ndarrays in sample to Tensors."""
 
@@ -159,3 +206,28 @@ class ToTensor(object):
         
         return {'image': torch.from_numpy(image),
                 'keypoints': torch.from_numpy(key_pts)}
+
+
+class ToTensorRGB(object):
+    """Convert ndarrays in sample to Tensors."""
+
+    def __call__(self, sample):
+        image, key_pts = sample['image'], sample['keypoints']
+         
+        # Convert BGR image to RGB image
+        #image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
+        # swap color axis because
+        # numpy image: H x W x C
+        # torch image: C X H X W
+        image = image.transpose((2, 0, 1))
+        #print(image.shape)
+        normalizer = transforms.Normalize(norm_means, norm_std)
+        image_torch = normalizer.forward(torch.from_numpy(image))
+
+        key_pts_copy = np.copy(key_pts)        
+        # scale keypoints to be centered around 0 with a range of [-1, 1]
+        # mean = 100, sqrt = 50, so, pts should be (pts - 100)/50
+        key_pts_copy = (key_pts_copy - 100)/50.0
+        
+        return {'image': image_torch,
+                'keypoints': torch.from_numpy(key_pts_copy)}
