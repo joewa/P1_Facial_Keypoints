@@ -62,7 +62,7 @@ class YaNaimishNet1(nn.Module):
         self.fc1 = nn.Linear(512*3*3, 4608)
         self.fc2 = nn.Linear(4608, 2304)
         self.fc3 = nn.Linear(2304, 2304)
-        self.fc4 = nn.Linear(2304, 14*2)
+        self.fc4 = nn.Linear(2304, 16*2)
         
         ## Note that among the layers to add, consider including:
         # maxpooling layers, multiple conv layers, fully-connected layers, and other layers (such as dropout or batch normalization) to avoid overfitting
@@ -142,7 +142,7 @@ class YaNaimishNet2(nn.Module):
         # 256 outputs * the 12*12 filtered/pooled map size
         self.fc1 = nn.Linear(1024*3*3, 4608)
         self.fc2 = nn.Linear(4608, 4608)
-        self.fc3 = nn.Linear(4608, 14*2)
+        self.fc3 = nn.Linear(4608, 16*2)
         
         ## Note that among the layers to add, consider including:
         # maxpooling layers, multiple conv layers, fully-connected layers, and other layers (such as dropout or batch normalization) to avoid overfitting
@@ -217,7 +217,7 @@ class YaNaimishNet3(nn.Module):
         # 256 outputs * the 12*12 filtered/pooled map size
         self.fc1 = nn.Linear(6400, 3200)
         self.fc2 = nn.Linear(3200, 1600)
-        self.fc3 = nn.Linear(1600, 14*2)
+        self.fc3 = nn.Linear(1600, 16*2)
         
         ## Note that among the layers to add, consider including:
         # maxpooling layers, multiple conv layers, fully-connected layers, and other layers (such as dropout or batch normalization) to avoid overfitting

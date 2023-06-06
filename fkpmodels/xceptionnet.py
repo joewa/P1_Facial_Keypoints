@@ -182,7 +182,7 @@ class XceptionNet(nn.Module):
         self.exit_block = ExitBlock()
 
         # self.fc = nn.Linear(1024, 136)
-        self.fc = nn.Linear(1024, 14*2)
+        self.fc = nn.Linear(1024, 16*2)
 
     def forward(self, x):
         x = self.entry_block(x)
