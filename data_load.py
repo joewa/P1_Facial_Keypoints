@@ -11,7 +11,7 @@ from torchvision import transforms
 
 # Use only keypoints that have a high probability to be associated with an edge
 keypoint_list = []
-keypoint_sublist = [19, 22, 23, 26, 28, 31, 37, 40, 43, 46, 49, 52, 55, 59]
+keypoint_sublist = [19, 21, 22, 23, 24, 26, 28, 31, 37, 40, 43, 46, 49, 52, 55, 59]
 for id in keypoint_sublist:
     keypoint_list.append((id-1)*2)
     keypoint_list.append((id-1)*2+1)
